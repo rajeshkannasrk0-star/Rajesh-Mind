@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rajesh — Inner Self OS Pro v3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #030307;
+    --surface: #09090f;
+    --surface2: #12121f;
+    --border: #1f1f33;
+    --border-glow: #4f46e5;
+    --text: #f8fafc;
+    --muted: #64748b;
+    --accent: #6366f1;
+    --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    overflow-x: hidden;
+  }
+
+  /* SIDEBAR WITH PREMIUM TRANSITIONS */
+  #sidebar {
+    width: 290px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .sidebar-header {
+    padding: 32px 24px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar-header:hover { background: rgba(99, 102, 241, 0.04); }
+  .sidebar-logo { font-family: var(--mono); font-size: 11px; color: #a855f7; letter-spacing: 0.25em; text-transform: uppercase; margin-bottom: 6px; }
+  .sidebar-title { font-size: 20px; font-weight: 700; }
+
+  .nav-section-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em; color: var(--muted); text-transform: uppercase; padding: 24px 24px 12px; }
+  #sidebar-nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
+  
+  .role-nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+  .role-nav-btn:hover { color: var(--text); background: var(--surface2); transform: translateX(4px); }
+  .role-nav-btn.active { color: var(--text); background: rgba(99, 102, 241, 0.15); box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.3); }
+
+  /* VAULT LINK STYLING */
+  .vault-btn { border: 1px dashed var(--border); margin: 4px 12px; font-weight: 600; }
+  .vault-btn.regret-mode:hover { border-color: var(--warning); background: rgba(245, 158, 11, 0.05); color: var(--warning); }
+  .vault-btn.failure-mode:hover { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); color: var(--danger); }
+
+  /* MAIN AREA WITH VIEW TRANSITIONS */
+  #main { flex: 1; overflow-y: auto; height: 100vh; position: relative; }
+  .view-container {
+    padding: 48px 56px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(15px);
+    display: none;
+    transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .view-container.active-view { display: block; opacity: 1; transform: translateY(0); }
+
+  /* SCALE VERIFICATION GRID (20, 40, 60, 80, 100) */
+  .scale-container { margin: 24px 0; background: var(--surface); border: 1px solid var(--border); padding: 20px; border-radius: 14px; }
+  .scale-bar-wrapper { position: relative; height: 8px; background: var(--surface2); border-radius: 4px; margin-top: 12px; }
+  .scale-bar-fill { height: 100%; width: 0%; background: var(--accent-gradient); border-radius: 4px; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+  .scale-markers { display: flex; justify-content: space-between; margin-top: 10px; font-family: var(--mono); font-size: 11px; color: var(--muted); position: relative; }
+  .marker-node { position: absolute; top: -18px; transform: translateX(-50%); width: 10px; height: 10px; background: var(--surface2); border: 2px solid var(--border); border-radius: 50%; transition: all 0.3s; }
+  .marker-node.passed { background: var(--success); border-color: #059669; box-shadow: 0 0 8px var(--success); }
+
+  /* CHARTS MODULES GRID */
+  .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 40px; }
+  @media (max-width: 1100px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; min-height: 340px; }
+  .chart-card h3 { font-size: 13px; font-family: var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .chart-wrapper { position: relative; width: 100%; height: 260px; }
+
+  /* INTERACTIVE ENGINE CONFIGURATIONS */
+  .roles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .role-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+  .role-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
+  .rc-name { font-size: 17px; font-weight: 600; color: #fff; margin: 12px 0 4px; }
+  .rc-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  /* COMPLEX COMPONENT CARDS */
+  .item-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; display: flex; gap: 18px; align-items: flex-start; transition: border-color 0.3s; }
+  .item-card:hover { border-color: #333352; }
+  .item-check-wrapper { padding-top: 2px; }
+  .item-details { flex: 1; }
+  .item-header-line { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+  .item-title-text { font-size: 16px; font-weight: 600; color: #fff; }
+  .item-title-text.completed { text-decoration: line-through; color: var(--muted); }
+  .item-desc-text { color: var(--muted); font-size: 14px; line-height: 1.5; margin-bottom: 12px; }
+  .item-metadata-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .meta-tag { font-family: var(--mono); font-size: 11px; padding: 4px 10px; border-radius: 6px; background: var(--surface2); color: #94a3b8; border: 1px solid var(--border); }
+  .meta-tag.priority-high { color: var(--danger); background: rgba(239, 68, 68, 0.06); border-color: rgba(239, 68, 68, 0.2); }
+  .meta-tag.priority-medium { color: var(--warning); background: rgba(245, 158, 11, 0.06); border-color: rgba(245, 158, 11, 0.2); }
+
+  /* TEXT ARCHIVE INTERFACES */
+  .vault-textarea { width: 100%; min-height: 400px; background: #05050a; border: 1px solid var(--border); border-radius: 14px; color: #e2e8f0; font-family: var(--mono); font-size: 14px; padding: 24px; line-height: 1.7; outline: none; transition: border-color 0.3s; resize: vertical; }
+  .vault-textarea:focus { border-color: var(--border-glow); box-shadow: 0 0 15px rgba(99, 102, 241, 0.1); }
+  .vault-alert { background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 18px 24px; margin-bottom: 28px; font-size: 14px; line-height: 1.6; color: #cbd5e1; }
+
+  /* MODALS AND STYLINGS */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(2, 2, 4, 0.9); backdrop-filter: blur(10px); z-index: 100; display: none; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 36px; width: 560px; max-width: 95vw; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .field input, .field textarea, .field select { width: 100%; background: #05050a; border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: var(--sans); font-size: 14px; padding: 12px 16px; outline: none; }
+  .field select { color-scheme: dark; }
+  .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 28px; }
+
+  /* TABS & BUTTONS */
+  .tabs { display: flex; gap: 6px; margin-bottom: 28px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 6px; width: fit-content; }
+  .tab-btn { padding: 8px 20px; border: none; background: none; color: var(--muted); font-family: var(--sans); font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer; }
+  .tab-btn.active { background: var(--accent); color: #fff; }
+  .action-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 20px; font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  .empty-state { text-align: center; padding: 48px; color: var(--muted); border: 1px dashed var(--border); border-radius: 14px; font-size: 14px; }
+  .item-check { width: 22px; height: 22px; border: 2px solid var(--border); border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .item-check.done { background: var(--success); border-color: var(--success); }
+  .item-check.done::after { content: '✓'; color: #fff; font-size: 13px; font-weight: bold; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<nav id="sidebar">
+  <div class="sidebar-header" onclick="switchView('home-view')">
+    <div class="sidebar-logo">Inner Self OS</div>
+    <div class="sidebar-title">Rajesh's Mind</div>
+  </div>
+  
+  <div class="nav-section-label">Operational Layers</div>
+  <div id="sidebar-nav"></div>
+  
+  <div class="nav-section-label">Anti-Failure Frameworks</div>
+  <button class="role-nav-btn vault-btn regret-mode" onclick="switchView('regret-view')">⚠️ The Regret Matrix</button>
+  <button class="role-nav-btn vault-btn failure-mode" onclick="switchView('failure-view')">🧠 Failure Post-Mortem</button>
+  
+  <div class="sidebar-footer">System Verified · 2026</div>
+</nav>
+
+<main id="main">
+
+  <div id="home-view" class="view-container active-view">
+    <h1 style="font-size: 44px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em;">Cognitive Workspace</h1>
+    <p style="color: var(--muted); margin-bottom: 36px;">Cross-matrix tracking parameters calculating baseline efficiency limits across your 10 operational profiles.</p>
+
+    <div class="charts-grid">
+      <div class="chart-card"><h3>🕸️ Orientation Net Analysis</h3><div class="chart-wrapper"><canvas id="spiderChart"></canvas></div></div>
+      <div class="chart-card"><h3>📊 Cross-Role Capacity Mapping</h3><div class="chart-wrapper"><canvas id="barChart"></canvas></div></div>
+      <div class="chart-card"><h3>🥧 Focus Resource Distribution</h3><div class="chart-wrapper"><canvas id="pieChart"></canvas></div></div>
+      <div class="chart-card"><h3>📈 Execution Cadence Momentum</h3><div class="chart-wrapper"><canvas id="graphChart"></canvas></div></div>
+    </div>
+
+    <div class="roles-grid" id="roles-grid"></div>
+  </div>
+
+  <div id="role-view" class="view-container">
+    <div style="display: flex; align-items: center; gap: 24px; margin-bottom: 36px; padding-bottom: 32px; border-bottom: 1px solid var(--border);">
+      <div id="rv-emoji" style="font-size: 52px; width: 84px; height: 84px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; display: flex; align-items: center; justify-content: center;"></div>
+      <div>
+        <h1 id="rv-name" style="font-size: 32px; font-weight: 700; letter-spacing: -0.02em;"></h1>
+        <p id="rv-desc" style="color: var(--muted); margin-top: 4px; font-size: 15px;"></p>
+      </div>
+    </div>
+
+    <div class="scale-container">
+      <div style="display: flex; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--muted); text-transform: uppercase;">
+        <span>Verification Baseline Tracker</span>
+        <span id="scale-percentage" style="color: #fff; font-weight: 700;">0%</span>
+      </div>
+      <div class="scale-bar-wrapper">
+        <div class="scale-bar-fill" id="scale-fill"></div>
+        <div class="marker-node" style="left: 20%;" id="marker-20"></div>
+        <div class="marker-node" style="left: 40%;" id="marker-40"></div>
+        <div class="marker-node" style="left: 60%;" id="marker-60"></div>
+        <div class="marker-node" style="left: 80%;" id="marker-80"></div>
+        <div class="marker-node" style="left: 100%;" id="marker-100"></div>
+      </div>
+      <div class="scale-markers">
+        <span style="left: 20%; position: absolute; transform: translateX(-50%);">20%</span>
+        <span style="left: 40%; position: absolute; transform: translateX(-50%);">40%</span>
+        <span style="left: 60%; position: absolute; transform: translateX(-50%);">60%</span>
+        <span style="left: 80%; position: absolute; transform: translateX(-50%);">80%</span>
+        <span style="left: 100%; position: absolute; transform: translateX(-50%);">100%</span>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" id="btn-tab-goals" onclick="switchTab('goals')">🎯 Goals Matrix</button>
+      <button class="tab-btn" id="btn-tab-tasks" onclick="switchTab('tasks')">📝 Task Engine</button>
+    </div>
+
+    <div id="items-workspace">
+      <div class="section-head">
+        <h3 id="workspace-title">Nodes Logged</h3>
+        <button class="action-btn" onclick="openNodeModal()">+ Add New Node</button>
+      </div>
+      <div class="items-list" id="nodes-render-target"></div>
+    </div>
+  </div>
+
+  <div id="regret-view" class="view-container">
+    <h1 style="font-size: 36px; font-weight: 700; color: var(--warning); margin-bottom: 8px;">⚠️ The Regret Matrix</h1>
+    <div class="vault-alert"><strong>System Protocol:</strong> Write your deepest frustrations, friction points, and opportunities lost to inaction. Processing these elements logically transforms passive emotional baggage into strict behavioural constraints.</div>
+    <textarea class="vault-textarea" id="regret-store" placeholder="Log your deep psychological friction parameters here... What actions did inaction cost you? Save to permanently calibrate your trajectory." oninput="saveVaultText('regret')"></textarea>
+  </div>
+
+  <div id="failure-view" class="view-container">
+    <h1 style="font-size: 36px; font-weight: 700; color: var(--danger); margin-bottom: 8px;">🧠 Failure Post-Mortem</h1>
+    <div class="vault-alert"><strong>System Protocol:</strong> Deconstruct errors objective-by-objective. Isolate exactly what caused the strategic collapse. Documenting failure blueprints prevents logic loops, converting you into an expert non-mistaker.</div>
+    <textarea class="vault-textarea" id="failure-store" placeholder="Deconstruct past structural errors here... Break down the mechanics of the mistake so the code of your actions never repeats them." oninput="saveVaultText('failure')"></textarea>
+  </div>
+</main>
+
+<div class="modal-overlay" id="node-modal">
+  <div class="modal">
+    <h3 style="font-size: 18px; font-weight: 700; margin-bottom: 20px;">Initialize Node Vector</h3>
+    <div class="field"><label>Item Heading Name *</label><input type="text" id="fn-title" placeholder="Define critical operational target..." /></div>
+    <div class="field"><label>Detailed Operational Context/Description</label><textarea id="fn-desc" rows="3" style="width:100%; background:#05050a; border:1px solid var(--border); border-radius:10px; color:#fff; padding:12px; font-family:var(--sans);" placeholder="Enter operational parameters..."></textarea></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+      <div class="field">
+        <label>Priority Hierarchy</label>
+        <select id="fn-priority"><option value="low">🟢 Low Boundary</option><option value="medium" selected>🟡 Medium Threshold</option><option value="high">🔴 High Critical</option></select>
+      </div>
+      <div class="field"><label>Execution Start Date</label><input type="date" id="fn-start" /></div>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeNodeModal()">Abort</button><button class="btn-primary" onclick="commitNodeEntry()">Commit Node</button></div>
+  </div>
+</div>
+
+<script>
+const ROLES = [
+  { id: 'controlled',    emoji: '🧘', name: 'Controlled Rajesh',     desc: 'Processes sensory delays, eliminates structural distractions.' },
+  { id: 'finance',       emoji: '💰', name: 'Finance Rajesh',         desc: 'Monitors asset efficiency vectors, compounding structures.' },
+  { id: 'selfimprove',   emoji: '💪', name: 'Self-Improvement Rajesh',desc: 'Manages biomechanical parameters and baseline capacity optimization.' },
+  { id: 'creative',      emoji: '💡', name: 'Creative Rajesh',        desc: 'Maps alternative systems configurations and dynamic ideation.' },
+  { id: 'learner',       emoji: '🧠', name: 'Learner Rajesh',         desc: 'Runs info-processing pipelines, logic structures mapping.' },
+  { id: 'planner',       emoji: '📋', name: 'Planner Rajesh',         desc: 'Schedules temporal workflows and system resource constraints.' },
+  { id: 'student',       emoji: '📚', name: 'Student Rajesh',         desc: 'Executes TNPSC pathway parameters and academic architecture.' },
+  { id: 'decision',      emoji: '⚖️', name: 'Decision-Maker Rajesh',  desc: 'Evaluates risk profiles, terminates suboptimal focus vectors.' },
+  { id: 'explorer',      emoji: '🌍', name: 'Explorer Rajesh',        desc: 'Tests variables outside normal operational environments.' },
+  { id: 'growth',        emoji: '🚀', name: 'Growth Rajesh',          desc: 'Coordinates tracking horizons across all core operational lines.' },
+];
+
+let globalCharts = {};
+let currentRole = null, currentTab = 'goals';
+
+function load(k) { try { return JSON.parse(localStorage.getItem(k)) || []; } catch { return []; } }
+function save(k, d) { localStorage.setItem(k, JSON.stringify(d)); }
+function gKey(rId, t) { return `v3_rajesh_${rId}_${t}`; }
+
+function init() {
+  renderSidebar();
+  renderHomeDashboard();
+  initHighFidelityCharts();
+  
+  // Load Text Vaults
+  document.getElementById('regret-store').value = localStorage.getItem('v3_vault_regret') || '';
+  document.getElementById('failure-store').value = localStorage.getItem('v3_vault_failure') || '';
+}
+
+/* PREMIUM LEVEL TRANSITION SWITCHBOARD */
+function switchView(targetViewId) {
+  const active = document.querySelector('.view-container.active-view');
+  if (active) {
+    active.style.opacity = '0';
+    active.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+      active.classList.remove('active-view');
+      triggerTarget(targetViewId);
+    }, 200);
+  } else {
+    triggerTarget(targetViewId);
+  }
+}
+
+function triggerTarget(id) {
+  const target = document.getElementById(id);
+  target.classList.add('active-view');
+  setTimeout(() => {
+    target.style.opacity = '1';
+    target.style.transform = 'translateY(0)';
+  }, 50);
+
+  // Sync back-end values if returning home
+  if (id === 'home-view') {
+    renderHomeDashboard();
+    syncChartMatrices();
+  }
+}
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  ROLES.forEach(r => {
+    const btn = document.createElement('button');
+    btn.className = 'role-nav-btn' + (currentRole?.id === r.id ? ' active' : '');
+    btn.innerHTML = `<span>${r.emoji}</span><span style="margin-left:8px">${r.name.split(' ')[0]}</span>`;
+    btn.onclick = () => { openRolePerspective(r.id); };
+    nav.appendChild(btn);
+  });
+}
+
+function renderHomeDashboard() {
+  const grid = document.getElementById('roles-grid');
+  grid.innerHTML = '';
+  ROLES.forEach(r => {
+    const g = load(gKey(r.id, 'goals')), t = load(gKey(r.id, 'tasks'));
+    const tot = g.length + t.length;
+    const done = g.filter(i => i.done).length + t.filter(i => i.done).length;
+    const pct = tot ? Math.round((done / tot) * 100) : 0;
+
+    const card = document.createElement('div');
+    card.className = 'role-card';
+    card.innerHTML = `<div style="font-size:28px">${r.emoji}</div><div class="rc-name">${r.name}</div><div class="rc-meta">${pct}% Matrix Completion</div>`;
+    card.onclick = () => openRolePerspective(r.id);
+    grid.appendChild(card);
+  });
+}
+
+function openRolePerspective(id) {
+  currentRole = ROLES.find(r => r.id === id);
+  document.getElementById('rv-emoji').textContent = currentRole.emoji;
+  document.getElementById('rv-name').textContent = currentRole.name;
+  document.getElementById('rv-desc').textContent = currentRole.desc;
+  
+  // Highlight active sidebar item
+  document.querySelectorAll('#sidebar-nav .role-nav-btn').forEach((b, idx) => {
+    b.classList.toggle('active', ROLES[idx].id === id);
+  });
+
+  switchTab('goals');
+  switchView('role-view');
+}
+
+function switchTab(t) {
+  currentTab = t;
+  document.getElementById('btn-tab-goals').classList.toggle('active', t === 'goals');
+  document.getElementById('btn-tab-tasks').classList.toggle('active', t === 'tasks');
+  renderItemsWorkspace();
+}
+
+/* COMPLEX ITEM NODE RENDER PROTOCOL */
+function renderItemsWorkspace() {
+  const items = load(gKey(currentRole.id, currentTab));
+  const target = document.getElementById('nodes-render-target');
+  target.innerHTML = '';
+
+  // Process and compute scale bar markers (20%, 40%, 60%, 80%, 100%)
+  const doneCount = items.filter(i => i.done).length;
+  const pct = items.length ? Math.round((doneCount / items.length) * 100) : 0;
+  
+  document.getElementById('scale-percentage').textContent = pct + '%';
+  document.getElementById('scale-fill').style.width = pct + '%';
+  
+  // Explicit verification calculations
+  [20, 40, 60, 80, 100].forEach(marker => {
+    document.getElementById(`marker-${marker}`).classList.toggle('passed', pct >= marker);
+  });
+
+  if (!items.length) {
+    target.innerHTML = `<div class="empty-state">No execution trajectories logged inside this parameter field.</div>`;
+    return;
+  }
+
+  items.forEach(item => {
+    const dateFormatted = item.start ? new Date(item.start).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}) : 'No Cadence Set';
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <div class="item-check-wrapper"><div class="item-check ${item.done ? 'done' : ''}" onclick="toggleNodeElement('${item.id}')"></div></div>
+      <div class="item-details">
+        <div class="item-header-line"><div class="item-title-text ${item.done ? 'completed' : ''}">${item.title}</div></div>
+        ${item.desc ? `<div class="item-desc-text">${item.desc}</div>` : ''}
+        <div class="item-metadata-row">
+          <span class="meta-tag priority-${item.priority || 'medium'}">${item.priority ? item.priority.toUpperCase() : 'MEDIUM'} Threshold</span>
+          <span class="meta-tag">🛫 Start: ${dateFormatted}</span>
+        </div>
+      </div>
+      <div class="item-actions"><button class="icon-btn delete" onclick="deleteNodeElement('${item.id}')">🗑</button></div>
+    `;
+    target.appendChild(card);
+  });
+}
+
+function toggleNodeElement(id) {
+  const items = load(gKey(currentRole.id, currentTab));
+  const i = items.find(node => node.id === id);
+  if(i) { i.done = !i.done; save(gKey(currentRole.id, currentTab), items); }
+  renderItemsWorkspace();
+}
+
+function deleteNodeElement(id) {
+  const items = load(gKey(currentRole.id, currentTab)).filter(node => node.id !== id);
+  save(gKey(currentRole.id, currentTab), items);
+  renderItemsWorkspace();
+}
+
+function openNodeModal() {
+  document.getElementById('fn-title').value = '';
+  document.getElementById('fn-desc').value = '';
+  document.getElementById('fn-start').value = '';
+  document.getElementById('node-modal').classList.add('open');
+}
+function closeNodeModal() { document.getElementById('node-modal').classList.remove('open'); }
+
+function commitNodeEntry() {
+  const title = document.getElementById('fn-title').value.trim();
+  if(!title) return;
+  
+  const items = load(gKey(currentRole.id, currentTab));
+  items.push({
+    id: 'node_' + Math.random().toString(36).substring(2, 9),
+    title: title,
+    desc: document.getElementById('fn-desc').value.trim(),
+    priority: document.getElementById('fn-priority').value,
+    start: document.getElementById('fn-start').value,
+    done: false
+  });
+  
+  save(gKey(currentRole.id, currentTab), items);
+  closeNodeModal();
+  renderItemsWorkspace();
+}
+
+/* MEMORY LOG COGNITIVE VAULTS STORE */
+function saveVaultText(type) {
+  const val = document.getElementById(`${type}-store`).value;
+  localStorage.setItem(`v3_vault_${type}`, val);
+}
+
+/* HIGH-FIDELITY TRACKING GRAPH ENGINES */
+function initHighFidelityCharts() {
+  Chart.defaults.color = '#64748b';
+  Chart.defaults.font.family = 'Space Grotesk';
+
+  globalCharts.spider = new Chart(document.getElementById('spiderChart'), {
+    type: 'radar',
+    data: {
+      labels: ROLES.map(r => r.name.split(' ')[0]),
+      datasets: [
+        { label: 'System Success Trace', data: new Array(10).fill(0), backgroundColor: 'rgba(99, 102, 241, 0.06)', borderColor: '#6366f1', borderWidth: 2 },
+        { label: 'Unsatisfied Delta Gap', data: new Array(10).fill(0), backgroundColor: 'rgba(239, 68, 68, 0.02)', borderColor: '#ef4444', borderWidth: 1, borderDash: [3, 3] }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { r: { grid: { color: '#1e293b' }, angleLines: { color: '#1e293b' }, ticks: { display: false } } } }
+  });
+
+  globalCharts.bar = new Chart(document.getElementById('barChart'), {
+    type: 'bar',
+    data: {
+      labels: ROLES.map(r => r.name.split(' ')[0]),
+      datasets: [
+        { label: 'Targets Logged', data: new Array(10).fill(0), backgroundColor: '#12121f', borderColor: '#1f1f33', borderWidth: 1 },
+        { label: 'Resolved', data: new Array(10).fill(0), backgroundColor: '#a855f7' }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#12121f' } }, x: { grid: { display: false } } } }
+  });
+
+  globalCharts.pie = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ROLES.map(r => `${r.emoji} ${r.name.split(' ')[0]}`),
+      datasets: [{ data: new Array(10).fill(1), backgroundColor: ['#6366f1','#a855f7','#10b981','#f59e0b','#ec4899','#3b82f6','#14b8a6','#f43f5e','#84cc16','#06b6d4'], borderWidth: 0 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10 } } }, cutout: '75%' }
+  });
+
+  globalCharts.graph = new Chart(document.getElementById('graphChart'), {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{ label: 'Throughput Density', data: [3, 8, 5, 9, 7, 12, 10], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.03)', fill: true, tension: 0.3 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: '#12121f' } }, x: { grid: { display: false } } } }
+  });
+
+  syncChartMatrices();
+}
+
+function syncChartMatrices() {
+  let traceComplete = [], traceGap = [], totalBar = [], doneBar = [], weights = [];
+  
+  ROLES.forEach(r => {
+    const goals = load(gKey(r.id, 'goals')), tasks = load(gKey(r.id, 'tasks'));
+    const tot = goals.length + tasks.length;
+    const done = goals.filter(g => g.done).length + tasks.filter(t => t.done).length;
+    const rate = tot ? Math.round((done / tot) * 100) : 0;
+    
+    traceComplete.push(rate);
+    traceGap.push(100 - rate);
+    totalBar.push(tot);
+    doneBar.push(done);
+    weights.push(tot || 1);
+  });
+
+  globalCharts.spider.data.datasets[0].data = traceComplete;
+  globalCharts.spider.data.datasets[1].data = traceGap;
+  globalCharts.spider.update();
+
+  globalCharts.bar.data.datasets[0].data = totalBar;
+  globalCharts.bar.data.datasets[1].data = doneBar;
+  globalCharts.bar.update();
+
+  globalCharts.pie.data.datasets[0].data = weights;
+  globalCharts.pie.update();
+}
+
+init();
+</script>
+</body>
+</html>
